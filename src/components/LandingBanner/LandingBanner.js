@@ -63,9 +63,10 @@ const LandingBanner = props => {
   }, [backgroundImages.length]);
 
   useEffect(() => {
-    if (backgroundImages.length <= 1) {
+    if (backgroundImages.length <= 1 || typeof window === 'undefined') {
       return undefined;
     }
+
     let intervalId;
     const tick = () => {
       setActiveBackgroundIndex(i => (i + 1) % backgroundImages.length);
@@ -93,29 +94,11 @@ const LandingBanner = props => {
     };
   }, [backgroundImages.length]);
 
-  const extraBackground =
-    hasSlideshowBackgrounds ? (
-      <div className={bannerCss.slideshowRoot} aria-hidden="true">
-        {backgroundImages.map((item, i) => (
-          <div
-            key={`${sectionId}-bg-${item.key}`}
-            className={classNames(bannerCss.slide, {
-              [bannerCss.slideActive]: i === activeBackgroundIndex,
-            })}
-          >
-            <ResponsiveImage
-              className={bannerCss.slideImage}
-              alt={item.alt}
-              image={item.image}
-              variants={Object.keys(item.image.attributes?.variants || {})}
-              sizes={BACKGROUND_IMAGE_SIZES}
-            />
-          </div>
-        ))}
-      </div>
-    ) : null;
-
   useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
     const setCarouselWidth = () => {
       if (hasBlocks) {
         const elem = window.document.getElementById(sliderContainerId);
@@ -136,6 +119,27 @@ const LandingBanner = props => {
     window.addEventListener('resize', setCarouselWidth);
     return () => window.removeEventListener('resize', setCarouselWidth);
   }, [hasBlocks, sliderContainerId]);
+
+  const extraBackground = hasSlideshowBackgrounds ? (
+    <div className={bannerCss.slideshowRoot} aria-hidden="true">
+      {backgroundImages.map((item, i) => (
+        <div
+          key={`${sectionId}-bg-${item.key}`}
+          className={classNames(bannerCss.slide, {
+            [bannerCss.slideActive]: i === activeBackgroundIndex,
+          })}
+        >
+          <ResponsiveImage
+            className={bannerCss.slideImage}
+            alt={item.alt}
+            image={item.image}
+            variants={Object.keys(item.image.attributes?.variants || {})}
+            sizes={BACKGROUND_IMAGE_SIZES}
+          />
+        </div>
+      ))}
+    </div>
+  ) : null;
 
   const fieldComponents = options?.fieldComponents;
   const fieldOptions = { fieldComponents };
