@@ -25,15 +25,27 @@ import css from './SectionContainer.module.css';
  * @param {Object} props.appearance
  * @param {Object} props.options extra options for the section component (e.g. custom fieldComponents)
  * @param {Object<string,FieldComponentConfig>?} props.options.fieldComponents custom fields
+ * @param {React.ReactNode?} props.extraBackground absolutely positioned layer below appearance (e.g. hero slideshow)
  * @returns {JSX.Element} containing wrapper that can be used inside Block components.
  */
 const SectionContainer = props => {
-  const { className, rootClassName, id, as, children, appearance, options, ...otherProps } = props;
+  const {
+    className,
+    rootClassName,
+    id,
+    as,
+    children,
+    appearance,
+    options,
+    extraBackground,
+    ...otherProps
+  } = props;
   const Tag = as || 'section';
   const classes = classNames(rootClassName || css.root, className);
 
   return (
     <Tag className={classes} id={id} {...otherProps}>
+      {extraBackground ? <div className={css.extraBackground}>{extraBackground}</div> : null}
       {appearance?.fieldType === 'customAppearance' ? (
         <Field
           data={{ alt: `Background image for ${id}`, ...appearance }}
