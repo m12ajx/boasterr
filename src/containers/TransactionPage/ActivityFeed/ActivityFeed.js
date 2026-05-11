@@ -16,7 +16,7 @@ import {
   TX_TRANSITION_ACTOR_SYSTEM,
 } from '../../../transactions/transaction';
 
-import { Avatar, InlineTextButton, ReviewRating, UserDisplayName } from '../../../components';
+import { Avatar, ExternalLink, InlineTextButton, ReviewRating, UserDisplayName } from '../../../components';
 
 import { stateDataShape } from '../TransactionPage.stateData';
 
@@ -63,13 +63,38 @@ const getMessageContent = (message, transaction, intl, richTextOptions = {}) => 
  */
 const Message = props => {
   const { message, formattedDate, transaction, intl } = props;
-  const content = getMessageContent(message, transaction, intl);
+  const messageContent = message.attributes.content;
+  const isImage = messageContent.includes('New image attached -');
+  const isVideo = messageContent.includes('New video attached -');
+
+  let content;
+  if (isImage || isVideo) {
+    const mediaUrl = messageContent.split(`New ${isImage ? 'image' : 'video'} attached - `)[1];
+    content = mediaUrl?.trim();
+  } else {
+    content = getMessageContent(message, transaction, intl);
+  }
 
   return (
     <div className={css.message}>
       <Avatar className={css.avatar} user={message.sender} />
       <div>
-        <p className={css.messageContent}>{content}</p>
+        {isImage ? (
+          <div className={css.messageMediaWrapper}>
+            <ExternalLink href={content}>
+              <img className={css.uploadedImage} src={content} alt="Shared image" />
+            </ExternalLink>
+          </div>
+        ) : isVideo ? (
+          <div className={css.messageMediaWrapper}>
+            <video className={css.uploadedVideo} controls>
+              <source src={content} type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          </div>
+        ) : (
+          <p className={css.messageContent}>{content}</p>
+        )}
         <p className={css.messageDate}>{formattedDate}</p>
       </div>
     </div>
@@ -85,14 +110,39 @@ const Message = props => {
  */
 const OwnMessage = props => {
   const { message, formattedDate, transaction, intl } = props;
-  const content = getMessageContent(message, transaction, intl, {
-    linkClass: css.ownMessageContentLink,
-  });
+  const messageContent = message.attributes.content;
+  const isImage = messageContent.includes('New image attached -');
+  const isVideo = messageContent.includes('New video attached -');
+
+  let content;
+  if (isImage || isVideo) {
+    const mediaUrl = messageContent.split(`New ${isImage ? 'image' : 'video'} attached - `)[1];
+    content = mediaUrl?.trim();
+  } else {
+    content = getMessageContent(message, transaction, intl, {
+      linkClass: css.ownMessageContentLink,
+    });
+  }
 
   return (
     <div className={css.ownMessage}>
       <div className={css.ownMessageContentWrapper}>
-        <p className={css.ownMessageContent}>{content}</p>
+        {isImage ? (
+          <div className={css.ownMessageMediaWrapper}>
+            <ExternalLink href={content}>
+              <img className={css.uploadedImage} src={content} alt="Shared image" />
+            </ExternalLink>
+          </div>
+        ) : isVideo ? (
+          <div className={css.ownMessageMediaWrapper}>
+            <video className={css.uploadedVideo} controls>
+              <source src={content} type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          </div>
+        ) : (
+          <p className={css.ownMessageContent}>{content}</p>
+        )}
       </div>
       <p className={css.ownMessageDate}>{formattedDate}</p>
     </div>
