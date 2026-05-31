@@ -22,6 +22,7 @@ import BookingLocationMaybe from './BookingLocationMaybe';
 import FeedSection from './FeedSection';
 import DiminishedActionButtonMaybe from './DiminishedActionButtonMaybe';
 import PanelHeading from './PanelHeading';
+import CountdownTimer from './CountdownTimer';
 
 import css from './TransactionPanel.module.css';
 
@@ -254,6 +255,10 @@ export class TransactionPanelComponent extends Component {
       <div className={classes}>
         <div className={css.container}>
           <div className={css.txInfo}>
+            <CountdownTimer
+              timeRequiredHours={listing?.attributes?.publicData?.timeRequired}
+              txTransitions={transitions}
+            />
             <DetailCardImage
               rootClassName={css.imageWrapperMobile}
               avatarWrapperClassName={css.avatarWrapperMobile}
@@ -269,7 +274,6 @@ export class TransactionPanelComponent extends Component {
                 <AvatarLarge user={customer} className={css.avatarDesktop} />
               </div>
             ) : null}
-
             <PanelHeading
               processName={stateData.processName}
               processState={stateData.processState}
@@ -286,11 +290,9 @@ export class TransactionPanelComponent extends Component {
               listingTitle={listingTitle}
               listingDeleted={listingDeleted}
             />
-
             {requestQuote}
             {offer}
             {transactionFieldsComponent}
-
             {!isInquiryProcess ? (
               <div className={css.orderDetails}>
                 <div className={css.orderDetailsMobileSection}>
@@ -362,7 +364,6 @@ export class TransactionPanelComponent extends Component {
                 <FormattedMessage id="TransactionPanel.sendingMessageNotAllowed" />
               </div>
             )}
-
             {stateData.showActionButtons ? (
               <>
                 <div className={css.mobileActionButtonSpacer}></div>

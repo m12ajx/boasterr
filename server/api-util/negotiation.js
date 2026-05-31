@@ -183,9 +183,10 @@ exports.addOfferToMetadata = (metadata, offer) => {
         metadata: {
           ...metadata,
           offers: [...existingOffers, offer],
+          timerRunning: true,
         },
       }
     : metadata
-    ? { metadata }
+    ? { metadata: { ...metadata, timerRunning: true } }
     : {};
 };
