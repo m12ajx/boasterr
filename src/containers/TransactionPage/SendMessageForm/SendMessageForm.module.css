@@ -56,3 +56,20 @@
 .sendIcon {
   margin: -3px 5px 0 0;
 }
+
+.uploadButton {
+  composes: buttonSecondaryInline from global;
+  margin-right: 10px;
+}
+
+.imageUploader {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: none;
+}
+
+.loadingIcon {
+  width: 20px;
+  height: 20px;
+}

@@ -43,9 +43,14 @@ const getMetadata = (orderData, transition) => {
               transition,
             },
           ],
+          timerRunning: true,
         },
       }
-    : {};
+    : {
+        metadata: {
+          timerRunning: true,
+        },
+      };
 };
 
 module.exports = (req, res) => {

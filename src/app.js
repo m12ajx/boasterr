@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { HelmetProvider } from 'react-helmet-async';
 import { BrowserRouter, StaticRouter } from 'react-router-dom';
 import { Provider } from 'react-redux';
@@ -13,9 +13,15 @@ import configureStore from './store';
 // utils
 import { RouteConfigurationProvider } from './context/routeConfigurationContext';
 import { ConfigurationProvider } from './context/configurationContext';
-import { difference } from './util/common';
+import { parse } from './util/urlHelpers';
+import { difference, isEmpty } from './util/common';
 import { mergeConfig } from './util/configHelpers';
 import { IntlProvider } from './util/reactIntl';
+import {
+  clearReferralDataIfExpired,
+  filterValidReferralData,
+  storeReferralData,
+} from './util/webStorageHelpers';
 import { includeCSSProperties } from './util/style';
 import { IncludeScripts } from './util/includeScripts';
 
@@ -212,6 +218,24 @@ export const ClientApp = props => {
   const { store, hostedTranslations = {}, hostedConfig = {} } = props;
   const appConfig = mergeConfig(hostedConfig, defaultConfig);
 
+  useEffect(() => {
+    // Clear referral data from session storage the expiration time has passed
+    clearReferralDataIfExpired();
+
+    // If URL contains new referral data, store it
+    const urlReferralParams = parse(window?.location?.search);
+    const { userTypes = [] } = appConfig.user;
+    const isAuthenticated = store.getState()?.auth?.isAuthenticated;
+
+    // Check if URL contains valid referral params.
+    const validReferralParams = filterValidReferralData(urlReferralParams, userTypes);
+    // Don't store referral data if the user is authenticated - meaning they have already completed
+    // signup and have been redirected back here
+    if (!isAuthenticated && !isEmpty(validReferralParams)) {
+      storeReferralData(validReferralParams);
+    }
+  }, []);
+
   // Show warning on the localhost:3000, if the environment variable key contains "SECRET"
   if (appSettings.dev) {
     const envVars = process.env || {};
@@ -292,6 +316,7 @@ export const ServerApp = props => {
       />
     );
   }
+  const initialPathname = new URL(url, 'http://example.com')?.pathname;
 
   return (
     <Configurations appConfig={appConfig}>
@@ -302,7 +327,7 @@ export const ServerApp = props => {
       >
         <Provider store={store}>
           <HelmetProvider context={helmetContext}>
-            <IncludeScripts config={appConfig} initialPathname={url} />
+            <IncludeScripts config={appConfig} initialPathname={initialPathname} />
             <StaticRouter location={url} context={context}>
               <Routes />
             </StaticRouter>

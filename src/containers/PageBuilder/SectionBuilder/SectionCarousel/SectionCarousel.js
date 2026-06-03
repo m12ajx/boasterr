@@ -5,6 +5,7 @@ import Field, { hasDataInFields } from '../../Field';
 import BlockBuilder from '../../BlockBuilder';
 
 import SectionContainer from '../SectionContainer';
+import LandingBanner from '../../../../components/LandingBanner/LandingBanner';
 import css from './SectionCarousel.module.css';
 
 const KEY_CODE_ARROW_LEFT = 37;
@@ -80,29 +81,30 @@ const SectionCarousel = props => {
     blocks = [],
     options,
   } = props;
-  const sliderContainerId = `${props.sectionId}-container`;
-  const sliderId = `${props.sectionId}-slider`;
+  const sliderContainerId = `${sectionId}-container`;
+  const sliderId = `${sectionId}-slider`;
   const numberOfBlocks = blocks?.length;
   const hasBlocks = numberOfBlocks > 0;
 
   useEffect(() => {
     const setCarouselWidth = () => {
-      if (hasBlocks) {
-        const windowWidth = window.innerWidth;
-        const elem = window.document.getElementById(sliderContainerId);
-        const scrollbarWidth = window.innerWidth - document.body.clientWidth;
-        const elementWidth =
-          elem.clientWidth >= windowWidth - scrollbarWidth ? windowWidth : elem.clientWidth;
-        const carouselWidth = elementWidth - scrollbarWidth;
+      if (!hasBlocks) return;
+      const elem = window.document.getElementById(sliderContainerId);
+      if (!elem) return;
 
-        elem.style.setProperty('--carouselWidth', `${carouselWidth}px`);
-      }
+      const windowWidth = window.innerWidth;
+      const scrollbarWidth = window.innerWidth - document.body.clientWidth;
+      const elementWidth =
+        elem.clientWidth >= windowWidth - scrollbarWidth ? windowWidth : elem.clientWidth;
+      const carouselWidth = elementWidth - scrollbarWidth;
+
+      elem.style.setProperty('--carouselWidth', `${carouselWidth}px`);
     };
     setCarouselWidth();
 
     window.addEventListener('resize', setCarouselWidth);
     return () => window.removeEventListener('resize', setCarouselWidth);
-  }, []);
+  }, [hasBlocks, sliderContainerId]);
 
   // If external mapping has been included for fields
   // E.g. { h1: { component: MyAwesomeHeader } }
@@ -112,16 +114,20 @@ const SectionCarousel = props => {
   const hasHeaderFields = hasDataInFields([title, description, callToAction], fieldOptions);
 
   const onSlideLeft = e => {
-    var slider = window.document.getElementById(sliderId);
-    const slideWidth = numColumns * slider?.firstChild?.clientWidth;
+    const slider = window.document.getElementById(sliderId);
+    const itemWidth = slider?.firstChild?.clientWidth;
+    if (!slider || !itemWidth) return;
+    const slideWidth = numColumns * itemWidth;
     slider.scrollLeft = slider.scrollLeft - slideWidth;
     // Fix for Safari
     e.target.focus();
   };
 
   const onSlideRight = e => {
-    var slider = window.document.getElementById(sliderId);
-    const slideWidth = numColumns * slider?.firstChild?.clientWidth;
+    const slider = window.document.getElementById(sliderId);
+    const itemWidth = slider?.firstChild?.clientWidth;
+    if (!slider || !itemWidth) return;
+    const slideWidth = numColumns * itemWidth;
     slider.scrollLeft = slider.scrollLeft + slideWidth;
     // Fix for Safari
     e.target.focus();
@@ -138,6 +144,24 @@ const SectionCarousel = props => {
       onSlideRight(e);
     }
   };
+
+  if (sectionId === 'landing_hero') {
+    return (
+      <LandingBanner
+        sectionId={sectionId}
+        className={className}
+        rootClassName={rootClassName}
+        defaultClasses={defaultClasses}
+        numColumns={numColumns}
+        title={title}
+        description={description}
+        appearance={appearance}
+        callToAction={callToAction}
+        blocks={blocks}
+        options={options}
+      />
+    );
+  }
 
   return (
     <SectionContainer
