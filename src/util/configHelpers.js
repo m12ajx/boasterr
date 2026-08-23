@@ -86,7 +86,10 @@ const hasClashWithBuiltInPublicDataKey = listingFields => {
 const validAccessControl = accessControlConfig => {
   const accessControl = accessControlConfig || {};
   const marketplace = accessControl?.marketplace || {};
-  return { ...accessControl, marketplace: { private: false, ...marketplace } };
+  return {
+    ...accessControl,
+    marketplace: { private: false, fileUploadAndDownloadDisabled: false, ...marketplace },
+  };
 };
 
 /////////////////////////
@@ -1058,7 +1061,7 @@ const validListingTypes = listingTypes => {
           },
           ...validTransactionFieldsMaybe,
           ...priceVariationTypeMaybe,
-          // e.g. stockType, availabilityType,...
+          // e.g. stockType, availabilityType, messagingOptions...
           ...restOfListingType,
         },
       ];
@@ -1088,6 +1091,13 @@ export const displayDeliveryPickup = listingTypeConfig => {
 
 export const displayDeliveryShipping = listingTypeConfig => {
   return listingTypeConfig?.defaultListingFields?.shipping !== false;
+};
+
+export const requireListingFiles = listingTypeConfig => {
+  // Unlike other require helpers, this uses a === true check instead of !== false because files are
+  // opt-in. An undefined value indicates that files are not required and in general, new configs for
+  // established listing types are undefined by default
+  return listingTypeConfig?.defaultListingFields?.files === true;
 };
 
 export const requireListingImage = listingTypeConfig => {
