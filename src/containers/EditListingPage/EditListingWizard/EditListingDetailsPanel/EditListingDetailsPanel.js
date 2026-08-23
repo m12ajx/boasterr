@@ -11,8 +11,11 @@ import {
 } from '../../../../util/types';
 import { LISTING_PAGE_PARAM_TYPE_NEW } from '../../../../util/urlHelpers';
 import {
+  ADDITIONAL_CATEGORIES_KEY,
+  ALL_CATEGORIES_KEY,
   isFieldForCategory,
   isFieldForListingType,
+  pickAdditionalCategoryIds,
   pickCategoryFields,
 } from '../../../../util/fieldHelpers';
 import { isBookingProcessAlias } from '../../../../transactions/transaction';
@@ -248,11 +251,20 @@ const getInitialValues = (
   const listingType = publicData?.listingType || preselectedListingType;
 
   const nestedCategories = pickCategoryFields(publicData, categoryKey, 1, listingCategories);
+  // The primary category is handled through the category level fields,
+  // so it's stripped from the additional categories when the form is initialized.
+  const additionalCategories = pickAdditionalCategoryIds(
+    publicData?.[ADDITIONAL_CATEGORIES_KEY] || publicData?.[ALL_CATEGORIES_KEY],
+    nestedCategories[`${categoryKey}1`],
+    listingCategories
+  );
+
   // Initial values for the form
   return {
     title,
     description,
     ...nestedCategories,
+    [ADDITIONAL_CATEGORIES_KEY]: additionalCategories,
     // Transaction type info: listingType, transactionProcessAlias, unitType
     ...getTransactionInfo({ listingTypes, existingListingTypeInfo, preselectedListingType }),
     ...initialValuesForListingFields(
@@ -401,6 +413,18 @@ const EditListingDetailsPanel = props => {
               ...[1, 2, 3].reduce((a, i) => ({ ...a, [`${categoryKey}${i}`]: null }), {}),
               ...nestedCategories,
             };
+
+            const primaryCategory = nestedCategories[`${categoryKey}1`];
+            const additionalCategories = pickAdditionalCategoryIds(
+              rest[ADDITIONAL_CATEGORIES_KEY],
+              primaryCategory,
+              listingCategories
+            );
+            // Both the primary category and the additional ones are also saved into a single
+            // array, so that all the categories of a listing can be read from one key.
+            const allCategories = primaryCategory
+              ? [primaryCategory, ...additionalCategories]
+              : additionalCategories;
             const publicListingFields = pickListingFieldsData(
               rest,
               'public',
@@ -424,6 +448,9 @@ const EditListingDetailsPanel = props => {
                 transactionProcessAlias,
                 unitType,
                 ...cleanedNestedCategories,
+                [ADDITIONAL_CATEGORIES_KEY]:
+                  additionalCategories.length > 0 ? additionalCategories : null,
+                [ALL_CATEGORIES_KEY]: allCategories.length > 0 ? allCategories : null,
                 ...publicListingFields,
               },
               privateData: privateListingFields,

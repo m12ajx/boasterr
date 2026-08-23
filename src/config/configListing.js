@@ -277,6 +277,9 @@ export const listingFields = [
  *                        - schema specific attributes:
  *                          - numberConfig (object, for schemaType: 'long'): { minimum: number, maximum: number }
  *                          - enumOptions (array, for schemaType: 'enum', 'multi-enum'): [{ label: string, option: string }]
+ * - messagingOptions     Options for the messaging experience
+ *  - fileAttachments:    - if set to true, uploading file attachments to messages is enabled. Marketplace level access control
+ *                          configuration may still disable uploading and downloading files, even if enabled in the listing type.
  */
 
 export const listingTypes = [
@@ -370,6 +373,7 @@ export const listingTypes = [
   //       schemaType: 'multi-enum',
   //     },
   //   ],
+  //   messagingOptions	{ fileAttachments: false }
   // },
   // {
   //   listingType: 'nightly-booking',
@@ -415,6 +419,36 @@ export const listingTypes = [
   //   defaultListingFields: {
   //     price: false,
   //     location: true,
+  //   },
+  // },
+  //   {
+  //   label: 'Digital file upload',
+  //   listingType: 'digital-file',
+  //   transactionType: {
+  //     process: 'default-download',
+  //     alias: 'default-download/release-1',
+  //     unitType: 'file',
+  //   },
+  //   transactionFields: [
+  //     {
+  //       label: 'Arbitrary field',
+  //       key: 'arbitrary',
+  //       schemaType: 'shortText',
+  //       showTo: 'customer',
+  //       helpText: 'A text field with a 70 char limit',
+  //     },
+  //   ],
+  //   defaultListingFields: {
+  //     description: true,
+  //     availability: false,
+  //     payoutDetails: true,
+  //     images: false,
+  //     pickup: false,
+  //     title: true,
+  //     shipping: false,
+  //     location: false,
+  //     price: true,
+  //     stock: false,
   //   },
   // },
 ];

@@ -11,6 +11,7 @@ import {
   getStartOf,
 } from '../../util/dates';
 import { constructQueryParamName, isOriginInUse } from '../../util/search';
+import { ALL_CATEGORIES_KEY } from '../../util/fieldHelpers';
 import { hasPermissionToViewData, isUserAuthorized } from '../../util/userHelpers';
 import { parse } from '../../util/urlHelpers';
 import { getReferralParams } from '../../util/webStorageHelpers';
@@ -294,6 +295,24 @@ const searchListingsPayloadCreator = ({ searchParams, config }, thunkAPI) => {
     })
   );
 
+  // A listing can belong to several categories: the primary one is saved to the nested
+  // categoryLevel keys and all of them (primary + the additional ones) are saved to the
+  // 'allCategories' array. The URL keeps using the categoryLevel1 param, but the query is made
+  // against 'allCategories' - otherwise the listings that have the category as an additional one
+  // would be left out of the results.
+  const categoryFilterConfig = config.search.defaultFilters?.find(f => f.schemaType === 'category');
+  const { key: categoryKey, scope: categoryScope } = categoryFilterConfig || {};
+  const topLevelCategoryParamName = constructQueryParamName(`${categoryKey}1`, categoryScope);
+  const allCategoriesParamName = constructQueryParamName(ALL_CATEGORIES_KEY, categoryScope);
+
+  const {
+    [topLevelCategoryParamName]: topLevelCategory,
+    ...apiParamsWithoutTopLevelCategory
+  } = apiParamsRaw;
+  const apiParams = topLevelCategory
+    ? { ...apiParamsWithoutTopLevelCategory, [allCategoriesParamName]: topLevelCategory }
+    : apiParamsRaw;
+
   const params = {
     // The params that are related to listing fields and categories are prepared here.
     // We add handler functions that check category and integer range configurations.
@@ -302,7 +321,7 @@ const searchListingsPayloadCreator = ({ searchParams, config }, thunkAPI) => {
     // - With integer range params, we prepare the property for API.
     //   I.e. the range end must be exclusive. E.g. 1000,2000 -> 1000,2001
     // Note: invalid independent search params are still passed through
-    ...prepareAPIParams(apiParamsRaw, [prepareCategoryParams, prepareIntegerRangeParam]),
+    ...prepareAPIParams(apiParams, [prepareCategoryParams, prepareIntegerRangeParam]),
     // If the search page variant is of type /s/:listingType, this sets the pub_listingType
     // query parameter to the value of the listing type path parameter. The ordering matters here,
     // since this value overrides any possible pub_listingType value coming from query parameters
