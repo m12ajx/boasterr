@@ -98,6 +98,38 @@ export const getFieldValue = (data, key) => {
 };
 
 /**
+ * Key of the listing's public data attribute, which holds the optional extra categories
+ * that the provider has picked in addition to the primary (nested) category.
+ */
+export const ADDITIONAL_CATEGORIES_KEY = 'additionalCategories';
+
+/**
+ * Key of the listing's public data attribute, which holds both the primary top-level category
+ * and the additional ones in a single array. This makes it easy to query all the categories
+ * a listing belongs to without combining several keys.
+ */
+export const ALL_CATEGORIES_KEY = 'allCategories';
+
+/**
+ * Picks valid additional category ids from the given data.
+ *
+ * Ids that are not part of the configured top-level categories are dropped, so are duplicates
+ * and the primary category (that one is saved through the nested category level fields).
+ *
+ * @param {Array<String>} categoryIds ids to validate
+ * @param {String} primaryCategoryId id of the category picked with the category level fields
+ * @param {Array} categoryOptions array of top-level category configurations
+ * @returns {Array<String>} valid additional category ids
+ */
+export const pickAdditionalCategoryIds = (categoryIds, primaryCategoryId, categoryOptions = []) => {
+  const ids = Array.isArray(categoryIds) ? categoryIds : [];
+  const validIds = categoryOptions.map(category => category.id);
+  return ids.filter(
+    (id, index) => validIds.includes(id) && id !== primaryCategoryId && ids.indexOf(id) === index
+  );
+};
+
+/**
  * Picks current values for listing categories based on provided public data and configuration.
  * This function validates if the initial values match with the configuration received via assets.
  * If a categoryLevel value doesn't match with the category configuration, it is not passed on to the form.

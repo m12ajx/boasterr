@@ -1532,5 +1532,7 @@
   "UserNav.accountSettings": "Account settings",
   "UserNav.profileSettings": "Profile settings",
   "UserNav.screenreader.userNav": "User profile navigation",
-  "UserNav.yourListings": "Your listings"
+  "UserNav.yourListings": "Your listings",
+  "EditListingDetailsForm.additionalCategoriesLabel": "Add more categories (optional)",
+  "EditListingDetailsForm.additionalCategoriesHelpText": "Select any other categories your listing belongs to."
 }

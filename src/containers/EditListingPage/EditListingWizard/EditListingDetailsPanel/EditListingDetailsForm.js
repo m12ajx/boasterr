@@ -9,6 +9,7 @@ import { displayDescription } from '../../../../util/configHelpers.js';
 import { useConfiguration } from '../../../../context/configurationContext.js';
 import { EXTENDED_DATA_SCHEMA_TYPES, propTypes } from '../../../../util/types';
 import {
+  ADDITIONAL_CATEGORIES_KEY,
   isFieldForCategory,
   isFieldForListingType,
   isValidCurrencyForTransactionProcess,
@@ -19,6 +20,7 @@ import { maxLength, required, composeValidators } from '../../../../util/validat
 import {
   Form,
   Button,
+  FieldCheckboxGroup,
   FieldSelect,
   FieldTextInput,
   Heading,
@@ -243,6 +245,45 @@ const FieldSelectCategory = props => {
   );
 };
 
+/**
+ * Optional multi-select for picking extra categories for the listing.
+ * The category that is already selected with the category level fields is left out of the options,
+ * since it is saved through those fields.
+ */
+const FieldAdditionalCategories = props => {
+  const { prefix, listingCategories, values, formApi, formId, intl } = props;
+
+  const primaryCategoryId = values[`${prefix}1`];
+  const selectedCategoryIds = values[ADDITIONAL_CATEGORIES_KEY] || [];
+
+  // If the primary category gets changed to one that has already been picked as an additional
+  // category, drop it from the additional ones to avoid saving the same category twice.
+  useEffect(() => {
+    if (primaryCategoryId && selectedCategoryIds.includes(primaryCategoryId)) {
+      formApi.change(
+        ADDITIONAL_CATEGORIES_KEY,
+        selectedCategoryIds.filter(id => id !== primaryCategoryId)
+      );
+    }
+  }, [primaryCategoryId]);
+
+  const options = listingCategories
+    .filter(category => category.id !== primaryCategoryId)
+    .map(category => ({ key: category.id, label: category.name }));
+
+  return options.length > 0 ? (
+    <FieldCheckboxGroup
+      className={css.additionalCategories}
+      id={formId ? `${formId}.${ADDITIONAL_CATEGORIES_KEY}` : ADDITIONAL_CATEGORIES_KEY}
+      name={ADDITIONAL_CATEGORIES_KEY}
+      label={intl.formatMessage({ id: 'EditListingDetailsForm.additionalCategoriesLabel' })}
+      helpText={intl.formatMessage({ id: 'EditListingDetailsForm.additionalCategoriesHelpText' })}
+      options={options}
+      twoColumns
+    />
+  ) : null;
+};
+
 // Add collect data for listing fields (both publicData and privateData) based on configuration
 const AddListingFields = props => {
   const { listingType, listingFieldsConfig, selectedCategories, formId, intl } = props;
@@ -312,6 +353,11 @@ const EditListingDetailsForm = props => (
   <FinalForm
     {...props}
     mutators={{ ...arrayMutators }}
+    // Initial values contain an array (additionalCategories) and a new instance of it is created
+    // on every render of the panel. React Final Form compares initial values with shallow equality,
+    // so the form gets reinitialized on every render. This keeps the values that the user has
+    // already changed instead of resetting the form.
+    keepDirtyOnReinitialize
     render={formRenderProps => {
       const {
         autoFocus,
@@ -373,6 +419,9 @@ const EditListingDetailsForm = props => (
       const showCategories = listingType && hasCategories;
 
       const showTitle = hasCategories ? allCategoriesChosen : listingType;
+      // Extra categories can be picked once the primary category has been selected.
+      const showAdditionalCategories =
+        showCategories && isCompatibleCurrency && !!values[`${categoryPrefix}1`];
 
       const config = useConfiguration();
       const listingTypeConfig = getListingTypeConfig(config, listingType);
@@ -417,6 +466,17 @@ const EditListingDetailsForm = props => (
               intl={intl}
               allCategoriesChosen={allCategoriesChosen}
               setAllCategoriesChosen={setAllCategoriesChosen}
+            />
+          )}
+
+          {showAdditionalCategories && (
+            <FieldAdditionalCategories
+              values={values}
+              prefix={categoryPrefix}
+              listingCategories={selectableCategories}
+              formApi={formApi}
+              formId={formId}
+              intl={intl}
             />
           )}
 
