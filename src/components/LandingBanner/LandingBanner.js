@@ -156,7 +156,9 @@ const LandingBanner = props => {
       extraBackground={extraBackground}
     >
       {hasHeaderFields ? (
-        <header className={defaultClasses.sectionDetails}>
+        <header
+          className={classNames(defaultClasses.sectionDetails, bannerCss.centeredSectionDetails)}
+        >
           <Field data={title} className={defaultClasses.title} options={fieldOptions} />
           <Field data={description} className={defaultClasses.description} options={fieldOptions} />
           <Field data={callToAction} className={defaultClasses.ctaButton} options={fieldOptions} />
