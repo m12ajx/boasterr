@@ -36,3 +36,17 @@
   padding-left: 0;
   padding-right: 0;
 }
+
+/* The shared section styles align the section details to the left on mobile viewports.
+   In the columns section, the title and the description are kept centered on every viewport.
+   Note: the 'header' element is needed to overrule the shared styles. */
+@media (max-width: 767px) {
+  header.centeredSectionDetails {
+    justify-content: center;
+  }
+
+  header.centeredSectionDetails > * {
+    text-align: center;
+    justify-self: center;
+  }
+}
